@@ -3,7 +3,7 @@
 Checkout the [SchoolAccount-LocalDevTools](https://github.com/DFE-Digital/SchoolAccount-LocalDevTools) and switch to the `default-network` branch
 Obtain a database backup and start the project via `docker compose up`
 
-run `docker compose up sqlserver-init-db` to add a `CollectStateLedger` database with table `CollectReturnStatus` and a Stored Procedure `AddChangedCollectReturnStatus`
+run `docker compose up` from the root of the project to add a `CollectStateLedger` database with table `CollectReturnStatus` and a Stored Procedure `AddChangedCollectReturnStatus`
 
 Run an initial load of the data, with the datestamp set to a week ago:
 ```

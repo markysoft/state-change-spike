@@ -31,68 +31,6 @@ CREATE TABLE [CollectReturnStatus]
 END
 
 GO
-CREATE OR ALTER PROCEDURE InsertCollectReturnStatus
-    @CensusName NVARCHAR(128),
-    @DaysSubtract INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    DECLARE @DCID INT
-    
-    -- Get the DCID based on the census name
-    SELECT @DCID = DCID
-    FROM COLLECTPortal.dbo.DataCollection
-    WHERE DCBladeSQLDatabase = @CensusName
-    
-    -- Validate that we found a matching DCID
-    IF @DCID IS NULL
-    BEGIN
-        RAISERROR('No DataCollection record found for census: %s', 16, 1, @CensusName)
-        RETURN
-    END
-    
-    INSERT INTO CollectStateLedger.dbo.CollectReturnStatus
-    (
-        SchoolName,
-        LAEStab,
-        ReturnStatus,
-        Errors,
-        Queries,
-        OkdErrorQueries,
-        Hash,
-        UpdatedAt,
-        DCID
-    )            
-    SELECT     
-        o.OrganisationName AS SchoolName,
-        o.OrganisationNativeID AS LAEstab, 
-        dr.DRStatus AS ReturnStatus,
-        dr.HighErrors AS Errors,
-        dr.LowErrors AS Queries,
-        dr.OKErrors AS OKdErrorQueries,
-        CONVERT(VARCHAR(32), HASHBYTES('MD5', 
-            CONCAT(CAST(dr.DRStatus AS VARCHAR), '|', 
-                   CAST(dr.HighErrors AS VARCHAR), '|', 
-                   CAST(dr.LowErrors AS VARCHAR), '|', 
-                   CAST(dr.OKErrors AS VARCHAR))), 2) AS Hash,     
-        DATEADD(DAY, -@DaysSubtract, GETDATE()) AS UpdatedAt,                   
-        @DCID AS DCID
-    FROM COLLECTPortal.dbo.Organisation o
-    INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
-        ON orol.OrganisationID = o.OrganisationID
-    INNER JOIN COLLECTPortal.dbo.DataReturn dr
-        ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
-    INNER JOIN COLLECTPortal.dbo.OrganisationRole orol2
-        ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
-    INNER JOIN COLLECTPortal.dbo.Organisation o2
-        ON orol2.OrganisationID = o2.OrganisationID
-    WHERE dr.DCID = @DCID
-    
-    -- Optional: Return the count of rows inserted
-    SELECT @@ROWCOUNT AS RowsInserted
-END
-GO
 
 CREATE OR ALTER PROCEDURE AddChangedCollectReturnStatus
     @CensusName NVARCHAR(128),

@@ -1,4 +1,5 @@
 USE [CollectStateLedger];
+
 EXEC AddChangedCollectReturnStatus 
     @CensusName = 'SchoolCensus2025_Spring',
     @DaysSubtract = 7;
@@ -6,7 +7,6 @@ EXEC AddChangedCollectReturnStatus
 
 SELECT count(*) FROM [CollectStateLedger].[dbo].[CollectReturnStatus]  
 
-USE [CollectStateLedger];
 EXEC AddChangedCollectReturnStatus 
     @CensusName = 'SchoolCensus2025_Spring',
     @DaysSubtract = 7;
@@ -22,14 +22,12 @@ SELECT count(*) FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
   where DataReturnID = 7383500
 
 
-  USE [CollectStateLedger];
   EXEC AddChangedCollectReturnStatus 
       @CensusName = 'SchoolCensus2025_Spring',
       @DaysSubtract = 6;
 
 SELECT count(*) FROM [CollectStateLedger].[dbo].[CollectReturnStatus]    
 
-  USE [CollectStateLedger];
   EXEC AddChangedCollectReturnStatus 
       @CensusName = 'SchoolCensus2025_Spring',
       @DaysSubtract = 6;
