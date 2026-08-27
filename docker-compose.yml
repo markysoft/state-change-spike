@@ -1,0 +1,17 @@
+services:
+  sqlserver-init-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    environment:
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MSSQL_SQLCMD_PATH=${MSSQL_SQLCMD_PATH}
+    command: /setup-scripts/configure-db.sh
+    volumes:
+      - ./src/sql-server:/setup-scripts
+    restart: "no"      
+
+networks:
+  default:
+    name: db-network
+    driver: bridge
+    external: true
