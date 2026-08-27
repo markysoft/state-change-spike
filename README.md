@@ -101,15 +101,16 @@ SELECT TOP (1000) [DataReturnID]
   ```
 
   Run the SP again to update the changes setting the date to 5 days ago:
-  ```
+```
     USE [CollectStateLedger];
   EXEC AddChangedCollectReturnStatus 
       @CensusName = 'SchoolCensus2025_Spring',
       @DaysSubtract = 5;
-      ```
+```
 
-Count is not 21875
+Count is now 21875
 ```
 SELECT count(*) FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
 ```
+
 Repeatedly running the query does not add any further rows
