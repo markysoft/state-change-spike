@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateChangeSimulation", "src\StateChangeSimulation\StateChangeSimulation.csproj", "{B56F68DB-1AEE-4573-B2B0-DE3F652803D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusChangeSimulation.Test", "test\StatusChangeSimulation.Test\StatusChangeSimulation.Test.csproj", "{335DA81F-B4E8-4094-8027-632D01276E61}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B56F68DB-1AEE-4573-B2B0-DE3F652803D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B56F68DB-1AEE-4573-B2B0-DE3F652803D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B56F68DB-1AEE-4573-B2B0-DE3F652803D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B56F68DB-1AEE-4573-B2B0-DE3F652803D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{335DA81F-B4E8-4094-8027-632D01276E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{335DA81F-B4E8-4094-8027-632D01276E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{335DA81F-B4E8-4094-8027-632D01276E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{335DA81F-B4E8-4094-8027-632D01276E61}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

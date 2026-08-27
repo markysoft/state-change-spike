@@ -59,7 +59,7 @@ SELECT TOP (1000) [DataReturnID]
   set DRStatus = 8, 
   HighErrors = 99,
   LowErrors = 100,
-  OKErrors = 101,
+  OKErrors = 101
   where DataReturnID = 7383500
   ```
 
@@ -86,7 +86,6 @@ SELECT TOP (1000) [DataReturnID]
       ,[DCID]
   FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
   where LAEStab = '3712195'
---  and ReturnStatus = 6
  order by UpdatedAt desc
  ```
 
@@ -113,4 +112,4 @@ Count is now 21875
 SELECT count(*) FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
 ```
 
-Repeatedly running the query does not add any further rows
+Repeatedly running the stored procedure does not add any further rows

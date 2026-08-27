@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace CollectAPI.Services;
+namespace StateChangeSimulation;
 
 public class CensusSummary
 {
@@ -10,7 +10,7 @@ public class CensusSummary
     public int ReturnStatusCode { get; set; }
 
     [Description("Return status description")]
-    public string ReturnStatus => ReturnStatusMapper.GetStatusDescription(ReturnStatusCode);
+    public int ReturnStatus {get; set; }
 
     [Description("Collection name")]
     public string Collection { get; set; } = string.Empty;
