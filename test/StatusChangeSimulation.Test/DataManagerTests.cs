@@ -36,4 +36,13 @@ public class DataManagerTests
         var count = await _datamanager.GetLedgerCount();
         Assert.True(count >= 0);
     }
+    
+    [Fact]
+    public async Task ShouldSimulateDataUpdate()
+    {
+        await _datamanager.SimulateDataUpdate(SchoolcensusSpring, "3712195", 200, 30, 400, 7);
+       
+        var results = await _datamanager.GetCensusSummary(SchoolcensusSpring, "3712195");
+        Assert.NotNull(results);
+    }
 }

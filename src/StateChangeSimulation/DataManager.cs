@@ -8,7 +8,7 @@ public class DataManager
 {
     private readonly string _connectionString =
         "Server=localhost;Database=COLLECTPortal;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
-    
+
     private const string CORE_QUERY = @"  
             SELECT       o2.OrganisationName AS LA,
                          o.OrganisationNativeID AS LAEstab, 
@@ -32,41 +32,75 @@ public class DataManager
 			ON dc.DCID = dr.DCID
 			WHERE dc.DCBladeSQLDatabase = @Collection
 ";
+
     public async Task<CensusSummary?> GetCensusSummary(string collection, string laestab)
     {
-	    var sql = $"{CORE_QUERY} AND o.OrganisationNativeID = @laestab";
-	    await using var connection = new SqlConnection(_connectionString);
+        var sql = $"{CORE_QUERY} AND o.OrganisationNativeID = @laestab";
+        await using var connection = new SqlConnection(_connectionString);
 
-	    var result = await connection.QueryFirstOrDefaultAsync<CensusSummary>(
-		    sql,
-		    new { Collection = collection, Laestab = laestab }
-	    );
+        var result = await connection.QueryFirstOrDefaultAsync<CensusSummary>(
+            sql,
+            new { Collection = collection, Laestab = laestab }
+        );
 
-	    return result;
+        return result;
     }
 
     public async Task ClearDownLedger()
     {
-	    await using var connection = new SqlConnection(_connectionString);
-	    var sql = "delete from [CollectStateLedger].[dbo].[CollectReturnStatus]";
-	    await connection.ExecuteAsync(sql);
+        await using var connection = new SqlConnection(_connectionString);
+        var sql = "delete from [CollectStateLedger].[dbo].[CollectReturnStatus]";
+        await connection.ExecuteAsync(sql);
     }
 
     public async Task<int> GetLedgerCount()
     {
-	    await using var connection = new SqlConnection(_connectionString);
-	    var sql = "select count(*) from [CollectStateLedger].[dbo].[CollectReturnStatus]";
-	    var result = await connection.QueryFirstOrDefaultAsync<int>(sql);
-	    return result;
+        await using var connection = new SqlConnection(_connectionString);
+        var sql = "select count(*) from [CollectStateLedger].[dbo].[CollectReturnStatus]";
+        var result = await connection.QueryFirstOrDefaultAsync<int>(sql);
+        return result;
     }
 
     public async Task<int> UpdateCensusLedger(string censusName, int daysSubtract)
     {
-	    await using var connection = new SqlConnection(_connectionString);
-	    var storedProcedureName = "[CollectStateLedger].[dbo].[AddChangedCollectReturnStatus]";
-	    var values = new { CensusName = censusName, DaysSubtract = 7 };
-	    var result = await connection.ExecuteAsync(storedProcedureName, values, commandType: CommandType.StoredProcedure);
-	    return result;
+        await using var connection = new SqlConnection(_connectionString);
+        var storedProcedureName = "[CollectStateLedger].[dbo].[AddChangedCollectReturnStatus]";
+        var values = new { CensusName = censusName, DaysSubtract = daysSubtract };
+        var result =
+            await connection.ExecuteAsync(storedProcedureName, values, commandType: CommandType.StoredProcedure);
+        return result;
     }
 
+    public async Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+        int status)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        string updateSql = @"
+UPDATE dr
+SET DRStatus = @Status, 
+  HighErrors = @HighErrors,
+  LowErrors = @LowErrors,
+  OKErrors = @OKErrors
+FROM COLLECTPortal.dbo.DataReturn dr
+            INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
+                        ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
+            INNER JOIN COLLECTPortal.dbo.Organisation o
+                        ON orol.OrganisationID = o.OrganisationID
+            INNER JOIN CollectPortal.dbo.OrganisationRole orol2
+                        ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
+            INNER JOIN COLLECTPortal.dbo.Organisation o2
+                        ON orol2.OrganisationID = o2.OrganisationID
+			INNER JOIN COLLECTPortal.dbo.DataCollection dc
+			ON dc.DCID = dr.DCID
+
+  WHERE
+                         o.OrganisationNativeID = @Laestab
+						 and dc.DCBladeSQLDatabase = @CensusName
+
+";
+        
+        var values = new { CensusName = censusName, Laestab = laestab, HighErrors =  errors, LowErrors = queries, OKErrors = okdErrors, Status = status };
+        await connection.ExecuteAsync(updateSql, values);
+   
+    }
 }
