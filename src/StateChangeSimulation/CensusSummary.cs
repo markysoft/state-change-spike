@@ -9,9 +9,6 @@ public class CensusSummary
     [JsonNumberHandling(JsonNumberHandling.Strict)]
     public int ReturnStatusCode { get; set; }
 
-    [Description("Return status description")]
-    public int ReturnStatus {get; set; }
-
     [Description("Collection name")]
     public string Collection { get; set; } = string.Empty;
 

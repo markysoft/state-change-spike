@@ -67,5 +67,26 @@ public class DataManagerTests
         await _datamanager.UpdateCensusLedger(SchoolcensusSpring, 0);
         updatedCount = await _datamanager.GetLedgerCount();
         Assert.Equal(3, updatedCount - originalCount);
+        
+        var result1 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8503023");
+        Assert.NotNull(result1);
+        Assert.Equal(10, result1.Errors);
+        Assert.Equal(11, result1.Queries);
+        Assert.Equal(12, result1.OkdErrorsQueries);
+        Assert.Equal(8, result1.ReturnStatusCode);
+        
+        var result2 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8153008");
+        Assert.NotNull(result2);
+        Assert.Equal(11, result2.Errors);
+        Assert.Equal(12, result2.Queries);
+        Assert.Equal(13, result2.OkdErrorsQueries);
+        Assert.Equal(8, result2.ReturnStatusCode);
+        
+        var result3 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8502389");
+        Assert.NotNull(result3);
+        Assert.Equal(12, result3.Errors);
+        Assert.Equal(13, result3.Queries);
+        Assert.Equal(14, result3.OkdErrorsQueries);
+        Assert.Equal(8, result3.ReturnStatusCode);
     }
 }
