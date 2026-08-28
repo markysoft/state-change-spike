@@ -5,7 +5,43 @@ Obtain a database backup and start the project via `docker compose up`
 
 run `docker compose up` from the root of the project to add a `CollectStateLedger` database with table `CollectReturnStatus` and a Stored Procedure `AddChangedCollectReturnStatus`
 
-Run an initial load of the data, with the datestamp set to a week ago:
+The [script](./src/sql-server/setup.sql) creates the table with the following SQL:
+```sql
+CREATE TABLE [CollectReturnStatus]
+(
+    [Id]                    INT IDENTITY(1,1) PRIMARY KEY,
+    [SchoolName]           [nvarchar] (250)   NOT NULL,
+    [LAEStab]              [nvarchar] (50)   NOT NULL,
+    [ReturnStatus]         [int] NOT NULL,
+    [Errors]               [int] NOT NULL,
+    [Queries]              [int] NOT NULL,
+    [OkdErrorQueries]      [int] NOT NULL,
+    [Hash]                  [nvarchar] (36)   NOT NULL,
+    UpdatedAt              [datetime]         NOT NULL,
+    DCID                  [int]              NOT NULL,
+);
+```
+
+The snapshot of the database contains data for the 2025 Spring Census.
+
+## .NET Tests to demonstrate status tracking
+
+The repository contains a .NET project that can connect to the database, run queries, update and the stored procedure.
+
+Of particular interest is the `SimulateDataChange` test. Running the test performs the following:
+
+- Set 3 schools data in the `CollectPortal` `DataReturn` table to a known state.
+- Clears down all data in the `CollectStateLedger` `CollectReturnStatus` table
+- Runs the stored procedure to populate the current statuses in th `CollectReturnStatus` table with a time stamp of one week ago
+- Updates three schools data in the `CollectPortal` `DataReturn` table to change the number of errors, queries, ok'd errors and status
+- Runs the stored procedure again
+- Checks that only one row has been added
+- Runs the SP again, demonstrating no rows are added on a re-run
+- Validates the updated records have the expected values
+
+## SQL commands to demonstrate status tracking
+
+Run an initial load of the census state into the `CollectReturnStatus` table, with the datestamp set to a week ago:
 ```
 USE [CollectStateLedger];
 EXEC AddChangedCollectReturnStatus 
@@ -20,9 +56,9 @@ SELECT count(*) FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
 
   There should be 21873 records
 
-Running the same query again should not increase the number of rows
+Running the same query again should not increase the number of rows.
 
-  The following query will return all rows in the data for the census:
+The following query will return all rows in the data for the census:
   ```
 SELECT TOP (1000) [DataReturnID]
       ,[DCID]
@@ -51,10 +87,8 @@ SELECT TOP (1000) [DataReturnID]
 
   The starting ID for census 1172 is 7383500.
 
-  Select one or more records to update, i.e.
-
+  Select a record to update, i.e.
   ```
-
   update [COLLECTPortal].[dbo].[DataReturn]
   set DRStatus = 8, 
   HighErrors = 99,
