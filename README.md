@@ -38,6 +38,7 @@ Of particular interest is the `SimulateDataChange` test. Running the test perfor
 - Checks that only one row has been added
 - Runs the SP again, demonstrating no rows are added on a re-run
 - Validates the updated records have the expected values
+- Sets the values back to the original state to ensure the state change is tracking changes, not unique states
 
 ## SQL commands to demonstrate status tracking
 
