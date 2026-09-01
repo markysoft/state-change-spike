@@ -4,7 +4,19 @@ using Microsoft.Data.SqlClient;
 
 namespace StateChangeSimulation;
 
-public class DataManager
+public interface IDataManager
+{
+    Task<List<MinCensusState>> GetMinCollectStatus(string collection);
+    Task<List<MinCensusState>> GetMinLedgerStatus(string collection);
+    Task ClearDownLedger();
+    Task<int> GetLedgerCount();
+    Task<int> UpdateCensusLedger(string censusName, int daysSubtract);
+
+    Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+        int status);
+}
+
+public class DataManager : IDataManager
 {
     private readonly string _connectionString =
         "Server=localhost;Database=COLLECTPortal;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
@@ -17,7 +29,7 @@ public class DataManager
                          dr.HighErrors AS Errors,
                          dr.LowErrors AS Queries,
                          dr.OKErrors AS OkdErrorsQueries,
-						 dc.DCName As Collection,
+						 dc.DCBladeSQLDatabase As Collection,
 						 dc.DCID
             FROM COLLECTPortal.dbo.Organisation o
             INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
@@ -45,7 +57,7 @@ public class DataManager
 
         return result;
     }
-    
+
     public async Task<List<CensusSummary>> GetCensusSummary(string collection)
     {
         await using var connection = new SqlConnection(_connectionString);
@@ -56,9 +68,9 @@ public class DataManager
         );
 
         return result.ToList();
-    }    
-    
-    
+    }
+
+
     public async Task<List<MinCensusState>> GetMinCollectStatus(string collection)
     {
         await using var connection = new SqlConnection(_connectionString);
@@ -102,17 +114,35 @@ public class DataManager
     public async Task<List<MinCensusState>> GetMinLedgerStatus(string collection)
     {
         string sql = @"  
-        SELECT [SchoolName]
-              ,[LAEStab]
-              ,[Errors]
-              ,[Queries]
-              ,[OkdErrorsQueries]
-              ,[ReturnStatusCode]
-              ,[Collection]
-              ,[DCID]
-          FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
-        where Collection = @Collection
-        order by UpdatedAt desc
+WITH RankedReturns AS (
+    SELECT [SchoolName]
+          ,[LAEStab]
+          ,[Errors]
+          ,[Queries]
+          ,[OkdErrorsQueries]
+          ,[ReturnStatusCode]
+          ,[Collection]
+          ,[DCID]
+          ,[UpdatedAt]
+          ,ROW_NUMBER() OVER (
+               PARTITION BY [LAEStab], [DCID]
+               ORDER BY [UpdatedAt] DESC
+           ) AS RowNum
+      FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
+     WHERE Collection = @Collection
+)
+SELECT [SchoolName]
+      ,[LAEStab]
+      ,[Errors]
+      ,[Queries]
+      ,[OkdErrorsQueries]
+      ,[ReturnStatusCode]
+      ,[Collection]
+      ,[DCID]
+      ,[UpdatedAt]
+  FROM RankedReturns
+ WHERE RowNum = 1
+ ORDER BY [UpdatedAt] DESC;
 ";
         await using var connection = new SqlConnection(_connectionString);
 
@@ -123,7 +153,7 @@ public class DataManager
 
         return result.ToList();
     }
-    
+
     public async Task ClearDownLedger()
     {
         await using var connection = new SqlConnection(_connectionString);
@@ -183,5 +213,37 @@ FROM COLLECTPortal.dbo.DataReturn dr
             Status = status
         };
         await connection.ExecuteAsync(updateSql, values);
+    }
+
+    public async Task AddNewStates(List<MinCensusState> states)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+        var sql = @"INSERT INTO [CollectStateLedger].[dbo].[CollectReturnStatus] 
+       (
+       SchoolName
+      ,LAEStab
+      ,ReturnStatusCode
+      ,Errors
+      ,Queries
+      ,OkdErrorsQueries
+      ,Hash
+      ,UpdatedAt
+      ,Collection
+      ,DCID
+      ) 
+    VALUES (
+        @SchoolName,
+        @LAEStab,
+        @ReturnStatusCode,
+        @Errors,
+        @Queries,
+        @OkdErrorsQueries,
+        'hash',
+        GETDATE(),
+        @Collection,
+        @DCID
+    )
+";
+        var rowsAffected = connection.Execute(sql, states);
     }
 }
