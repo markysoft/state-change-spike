@@ -4,21 +4,33 @@ using Microsoft.Data.SqlClient;
 
 namespace StateChangeSimulation;
 
-public class DataManager
+public interface IDataManager
+{
+    Task<List<MinCensusState>> GetMinCollectStatus(string collection);
+    Task<List<MinCensusState>> GetMinLedgerStatus(string collection);
+    Task ClearDownLedger();
+    Task<int> GetLedgerCount();
+    Task<int> UpdateCensusLedger(string censusName, int daysSubtract);
+
+    Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+        int status);
+}
+
+public class DataManager : IDataManager
 {
     private readonly string _connectionString =
         "Server=localhost;Database=COLLECTPortal;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
 
-    private const string CORE_QUERY = @"  
-            SELECT       o2.OrganisationName AS LA,
-                         o.OrganisationNativeID AS LAEstab, 
+    private const string MIN_CORE_QUERY = @"  
+            SELECT       
                          o.OrganisationName AS SchoolName,
+                         o.OrganisationNativeID AS LAEstab, 
                          dr.DRStatus AS ReturnStatusCode,
                          dr.HighErrors AS Errors,
                          dr.LowErrors AS Queries,
                          dr.OKErrors AS OkdErrorsQueries,
-						 dc.DCName As Collection,
-                         dr.SubmittedDate, dr.ApprovedDate, dr.AuthorisedDate
+						 dc.DCBladeSQLDatabase As Collection,
+						 dc.DCID
             FROM COLLECTPortal.dbo.Organisation o
             INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
                         ON orol.OrganisationID = o.OrganisationID
@@ -35,7 +47,7 @@ public class DataManager
 
     public async Task<CensusSummary?> GetCensusSummary(string collection, string laestab)
     {
-        var sql = $"{CORE_QUERY} AND o.OrganisationNativeID = @laestab";
+        var sql = $"{MIN_CORE_QUERY} AND o.OrganisationNativeID = @laestab";
         await using var connection = new SqlConnection(_connectionString);
 
         var result = await connection.QueryFirstOrDefaultAsync<CensusSummary>(
@@ -45,30 +57,32 @@ public class DataManager
 
         return result;
     }
-    public async Task<List<CensusSummary>> GetCensusSummary(string collection)
+
+    public async Task<List<MinCensusState>> GetMinCollectStatus(string collection)
     {
         await using var connection = new SqlConnection(_connectionString);
 
-        var result = await connection.QueryAsync<CensusSummary>(
-            CORE_QUERY,
+        var result = await connection.QueryAsync<MinCensusState>(
+            MIN_CORE_QUERY,
             new { Collection = collection }
         );
 
         return result.ToList();
     }
 
-    public async Task<CensusStatus?> GetCensusStatus(int dcid, string laestab)
+    public async Task<CensusStatus?> GetLedgerStatus(int dcid, string laestab)
     {
         string sql = @"  
         SELECT [SchoolName]
               ,[LAEStab]
-              ,[ReturnStatus]
-              ,LAG([ReturnStatus]) OVER (ORDER BY [UpdatedAt] ASC) AS [PreviousReturnStatus]
+              ,[ReturnStatusCode]
+              ,LAG([ReturnStatusCode]) OVER (ORDER BY [UpdatedAt] ASC) AS [PreviousReturnStatusCode]
               ,[Errors]
               ,[Queries]
               ,[OkdErrorsQueries]
               ,[Hash]
               ,[UpdatedAt]
+              ,[Collection]
               ,[DCID]
           FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
         where LAEStab = @LAEStab and DCID = @DCID
@@ -82,6 +96,49 @@ public class DataManager
         );
 
         return result;
+    }
+
+    public async Task<List<MinCensusState>> GetMinLedgerStatus(string collection)
+    {
+        string sql = @"  
+WITH RankedReturns AS (
+    SELECT [SchoolName]
+          ,[LAEStab]
+          ,[Errors]
+          ,[Queries]
+          ,[OkdErrorsQueries]
+          ,[ReturnStatusCode]
+          ,[Collection]
+          ,[DCID]
+          ,[UpdatedAt]
+          ,ROW_NUMBER() OVER (
+               PARTITION BY [LAEStab], [DCID]
+               ORDER BY [UpdatedAt] DESC
+           ) AS RowNum
+      FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
+     WHERE Collection = @Collection
+)
+SELECT [SchoolName]
+      ,[LAEStab]
+      ,[Errors]
+      ,[Queries]
+      ,[OkdErrorsQueries]
+      ,[ReturnStatusCode]
+      ,[Collection]
+      ,[DCID]
+      ,[UpdatedAt]
+  FROM RankedReturns
+ WHERE RowNum = 1
+ ORDER BY [UpdatedAt] DESC;
+";
+        await using var connection = new SqlConnection(_connectionString);
+
+        var result = await connection.QueryAsync<MinCensusState>(
+            sql,
+            new { Collection = collection }
+        );
+
+        return result.ToList();
     }
 
     public async Task ClearDownLedger()
@@ -143,5 +200,38 @@ FROM COLLECTPortal.dbo.DataReturn dr
             Status = status
         };
         await connection.ExecuteAsync(updateSql, values);
+    }
+
+    public async Task InsertCollectReturnStatuses(List<MinCensusState> states)
+    {
+        // this could be quicker using https://dapper-plus.net/bulk-insert but is another library and more config
+        await using var connection = new SqlConnection(_connectionString);
+        var sql = @"INSERT INTO [CollectStateLedger].[dbo].[CollectReturnStatus] 
+       (
+       SchoolName,
+      LAEStab,
+      ReturnStatusCode,
+      Errors,
+      Queries,
+      OkdErrorsQueries,
+      Hash,
+      UpdatedAt,
+      Collection,
+      DCID
+      ) 
+    VALUES (
+        @SchoolName,
+        @LAEStab,
+        @ReturnStatusCode,
+        @Errors,
+        @Queries,
+        @OkdErrorsQueries,
+        'hash',
+        GETDATE(),
+        @Collection,
+        @DCID
+    )
+";
+        var rowsAffected = connection.Execute(sql, states);
     }
 }

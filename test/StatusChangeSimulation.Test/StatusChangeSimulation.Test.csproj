@@ -22,4 +22,8 @@
       <ProjectReference Include="..\..\src\StateChangeSimulation\StateChangeSimulation.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="obj\MockDataManager.cs" />
+    </ItemGroup>
+
 </Project>
