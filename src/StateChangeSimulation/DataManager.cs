@@ -32,6 +32,29 @@ public class DataManager
 			ON dc.DCID = dr.DCID
 			WHERE dc.DCBladeSQLDatabase = @Collection
 ";
+    private const string MIN_CORE_QUERY = @"  
+            SELECT       
+                         o.OrganisationName AS SchoolName,
+                         o.OrganisationNativeID AS LAEstab, 
+                         dr.DRStatus AS ReturnStatusCode,
+                         dr.HighErrors AS Errors,
+                         dr.LowErrors AS Queries,
+                         dr.OKErrors AS OkdErrorsQueries,
+						 dc.DCName As Collection,
+						 dc.DCID
+            FROM COLLECTPortal.dbo.Organisation o
+            INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
+                        ON orol.OrganisationID = o.OrganisationID
+            INNER JOIN COLLECTPortal.dbo.DataReturn dr
+                        ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
+            INNER JOIN CollectPortal.dbo.OrganisationRole orol2
+                        ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
+            INNER JOIN COLLECTPortal.dbo.Organisation o2
+                        ON orol2.OrganisationID = o2.OrganisationID
+			INNER JOIN COLLECTPortal.dbo.DataCollection dc
+			ON dc.DCID = dr.DCID
+			WHERE dc.DCBladeSQLDatabase = @Collection
+";
 
     public async Task<CensusSummary?> GetCensusSummary(string collection, string laestab)
     {
@@ -45,12 +68,26 @@ public class DataManager
 
         return result;
     }
+    
     public async Task<List<CensusSummary>> GetCensusSummary(string collection)
     {
         await using var connection = new SqlConnection(_connectionString);
 
         var result = await connection.QueryAsync<CensusSummary>(
             CORE_QUERY,
+            new { Collection = collection }
+        );
+
+        return result.ToList();
+    }    
+    
+    
+    public async Task<List<MinCensusState>> GetMinCollectStatus(string collection)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+
+        var result = await connection.QueryAsync<MinCensusState>(
+            MIN_CORE_QUERY,
             new { Collection = collection }
         );
 
@@ -62,13 +99,14 @@ public class DataManager
         string sql = @"  
         SELECT [SchoolName]
               ,[LAEStab]
-              ,[ReturnStatus]
-              ,LAG([ReturnStatus]) OVER (ORDER BY [UpdatedAt] ASC) AS [PreviousReturnStatus]
+              ,[ReturnStatusCode]
+              ,LAG([ReturnStatusCode]) OVER (ORDER BY [UpdatedAt] ASC) AS [PreviousReturnStatusCode]
               ,[Errors]
               ,[Queries]
               ,[OkdErrorsQueries]
               ,[Hash]
               ,[UpdatedAt]
+              ,[Collection]
               ,[DCID]
           FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
         where LAEStab = @LAEStab and DCID = @DCID
@@ -84,6 +122,31 @@ public class DataManager
         return result;
     }
 
+    public async Task<List<MinCensusState>> GetMinLedgerStatus(string collection)
+    {
+        string sql = @"  
+        SELECT [SchoolName]
+              ,[LAEStab]
+              ,[Errors]
+              ,[Queries]
+              ,[OkdErrorsQueries]
+              ,[ReturnStatusCode]
+              ,[Collection]
+              ,[DCID]
+          FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
+        where Collection = @Collection
+        order by UpdatedAt desc
+";
+        await using var connection = new SqlConnection(_connectionString);
+
+        var result = await connection.QueryAsync<MinCensusState>(
+            sql,
+            new { Collection = collection }
+        );
+
+        return result.ToList();
+    }
+    
     public async Task ClearDownLedger()
     {
         await using var connection = new SqlConnection(_connectionString);
