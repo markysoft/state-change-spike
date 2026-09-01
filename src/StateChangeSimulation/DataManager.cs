@@ -9,29 +9,6 @@ public class DataManager
     private readonly string _connectionString =
         "Server=localhost;Database=COLLECTPortal;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
 
-    private const string CORE_QUERY = @"  
-            SELECT       o2.OrganisationName AS LA,
-                         o.OrganisationNativeID AS LAEstab, 
-                         o.OrganisationName AS SchoolName,
-                         dr.DRStatus AS ReturnStatusCode,
-                         dr.HighErrors AS Errors,
-                         dr.LowErrors AS Queries,
-                         dr.OKErrors AS OkdErrorsQueries,
-						 dc.DCName As Collection,
-                         dr.SubmittedDate, dr.ApprovedDate, dr.AuthorisedDate
-            FROM COLLECTPortal.dbo.Organisation o
-            INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
-                        ON orol.OrganisationID = o.OrganisationID
-            INNER JOIN COLLECTPortal.dbo.DataReturn dr
-                        ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
-            INNER JOIN CollectPortal.dbo.OrganisationRole orol2
-                        ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
-            INNER JOIN COLLECTPortal.dbo.Organisation o2
-                        ON orol2.OrganisationID = o2.OrganisationID
-			INNER JOIN COLLECTPortal.dbo.DataCollection dc
-			ON dc.DCID = dr.DCID
-			WHERE dc.DCBladeSQLDatabase = @Collection
-";
     private const string MIN_CORE_QUERY = @"  
             SELECT       
                          o.OrganisationName AS SchoolName,
@@ -58,7 +35,7 @@ public class DataManager
 
     public async Task<CensusSummary?> GetCensusSummary(string collection, string laestab)
     {
-        var sql = $"{CORE_QUERY} AND o.OrganisationNativeID = @laestab";
+        var sql = $"{MIN_CORE_QUERY} AND o.OrganisationNativeID = @laestab";
         await using var connection = new SqlConnection(_connectionString);
 
         var result = await connection.QueryFirstOrDefaultAsync<CensusSummary>(
@@ -74,7 +51,7 @@ public class DataManager
         await using var connection = new SqlConnection(_connectionString);
 
         var result = await connection.QueryAsync<CensusSummary>(
-            CORE_QUERY,
+            MIN_CORE_QUERY,
             new { Collection = collection }
         );
 
