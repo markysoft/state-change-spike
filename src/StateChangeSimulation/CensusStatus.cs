@@ -15,7 +15,7 @@ public class CensusStatus
 
     public int Queries { get; set; }
 
-    public int OkdErrorQueries { get; set; }
+    public int OkdErrorsQueries { get; set; }
 
     public string Hash { get; set; } = string.Empty;
     

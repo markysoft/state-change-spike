@@ -15,7 +15,7 @@ CREATE TABLE [CollectReturnStatus]
     [ReturnStatus]         [int] NOT NULL,
     [Errors]               [int] NOT NULL,
     [Queries]              [int] NOT NULL,
-    [OkdErrorQueries]      [int] NOT NULL,
+    [OkdErrorsQueries]      [int] NOT NULL,
     [Hash]                  [nvarchar] (36)   NOT NULL,
     UpdatedAt              [datetime]         NOT NULL,
     DCID                  [int]              NOT NULL,
@@ -115,7 +115,7 @@ SELECT TOP (1000) [DataReturnID]
       ,[ReturnStatus]
       ,[Errors]
       ,[Queries]
-      ,[OkdErrorQueries]
+      ,[OkdErrorsQueries]
       ,[Hash]
       ,[UpdatedAt]
       ,[DCID]

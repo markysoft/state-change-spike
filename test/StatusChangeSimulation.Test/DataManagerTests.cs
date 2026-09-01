@@ -16,6 +16,14 @@ public class DataManagerTests
     }
 
     [Fact]
+    public async Task ShouldReturnAllStatusesForCollection()
+    {
+        var results = await _datamanager.GetCensusSummary(SchoolcensusSpring);
+        Assert.NotNull(results);
+        Assert.True(results.Count > 21000);
+    }
+
+    [Fact]
     public async Task ShouldGetCount()
     {
         var count = await _datamanager.GetLedgerCount();
@@ -74,7 +82,7 @@ public class DataManagerTests
         Assert.NotNull(result1);
         Assert.Equal(10, result1.Errors);
         Assert.Equal(11, result1.Queries);
-        Assert.Equal(12, result1.OkdErrorQueries);
+        Assert.Equal(12, result1.OkdErrorsQueries);
         Assert.Equal(8, result1.ReturnStatus);
         Assert.Equal(7, result1.PreviousReturnStatus);
         
@@ -82,7 +90,7 @@ public class DataManagerTests
         Assert.NotNull(result2);
         Assert.Equal(11, result2.Errors);
         Assert.Equal(12, result2.Queries);
-        Assert.Equal(13, result2.OkdErrorQueries);
+        Assert.Equal(13, result2.OkdErrorsQueries);
         Assert.Equal(8, result2.ReturnStatus);
         Assert.Equal(7, result2.PreviousReturnStatus);
         
@@ -90,7 +98,7 @@ public class DataManagerTests
         Assert.NotNull(result3);
         Assert.Equal(12, result3.Errors);
         Assert.Equal(13, result3.Queries);
-        Assert.Equal(14, result3.OkdErrorQueries);
+        Assert.Equal(14, result3.OkdErrorsQueries);
         Assert.Equal(8, result3.ReturnStatus);
         Assert.Equal(7, result3.PreviousReturnStatus);
         
@@ -111,7 +119,7 @@ public class DataManagerTests
         Assert.NotNull(result4);
         Assert.Equal(1, result4.Errors);
         Assert.Equal(2, result4.Queries);
-        Assert.Equal(3, result4.OkdErrorQueries);
+        Assert.Equal(3, result4.OkdErrorsQueries);
         Assert.Equal(7, result4.ReturnStatus);
         Assert.Equal(8, result4.PreviousReturnStatus);
         
@@ -119,7 +127,7 @@ public class DataManagerTests
         Assert.NotNull(result5);
         Assert.Equal(3, result5.Errors);
         Assert.Equal(4, result5.Queries);
-        Assert.Equal(5, result5.OkdErrorQueries);
+        Assert.Equal(5, result5.OkdErrorsQueries);
         Assert.Equal(7, result5.ReturnStatus);
         Assert.Equal(8, result5.PreviousReturnStatus);
         
@@ -127,7 +135,7 @@ public class DataManagerTests
         Assert.NotNull(result6);
         Assert.Equal(4, result6.Errors);
         Assert.Equal(5, result6.Queries);
-        Assert.Equal(6, result6.OkdErrorQueries);
+        Assert.Equal(6, result6.OkdErrorsQueries);
         Assert.Equal(7, result6.ReturnStatus);     
         Assert.Equal(8, result6.PreviousReturnStatus);   
     }

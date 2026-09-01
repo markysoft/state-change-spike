@@ -45,6 +45,17 @@ public class DataManager
 
         return result;
     }
+    public async Task<List<CensusSummary>> GetCensusSummary(string collection)
+    {
+        await using var connection = new SqlConnection(_connectionString);
+
+        var result = await connection.QueryAsync<CensusSummary>(
+            CORE_QUERY,
+            new { Collection = collection }
+        );
+
+        return result.ToList();
+    }
 
     public async Task<CensusStatus?> GetCensusStatus(int dcid, string laestab)
     {
@@ -55,7 +66,7 @@ public class DataManager
               ,LAG([ReturnStatus]) OVER (ORDER BY [UpdatedAt] ASC) AS [PreviousReturnStatus]
               ,[Errors]
               ,[Queries]
-              ,[OkdErrorQueries]
+              ,[OkdErrorsQueries]
               ,[Hash]
               ,[UpdatedAt]
               ,[DCID]
