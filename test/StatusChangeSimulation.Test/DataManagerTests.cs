@@ -6,6 +6,7 @@ public class DataManagerTests
 {
     private readonly DataManager _datamanager = new();
     private const string SchoolcensusSpring = "SchoolCensus2025_Spring";
+    private const int SchoolCensusSpringDcId = 1172;
 
     [Fact]
     public async Task ShouldReturnStatus()
@@ -69,26 +70,26 @@ public class DataManagerTests
         updatedCount = await _datamanager.GetLedgerCount();
         Assert.Equal(3, updatedCount - originalCount);
         
-        var result1 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8503023");
+        var result1 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8503023");
         Assert.NotNull(result1);
         Assert.Equal(10, result1.Errors);
         Assert.Equal(11, result1.Queries);
-        Assert.Equal(12, result1.OkdErrorsQueries);
-        Assert.Equal(8, result1.ReturnStatusCode);
+        Assert.Equal(12, result1.OkdErrorQueries);
+        Assert.Equal(8, result1.ReturnStatus);
         
-        var result2 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8153008");
+        var result2 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8153008");
         Assert.NotNull(result2);
         Assert.Equal(11, result2.Errors);
         Assert.Equal(12, result2.Queries);
-        Assert.Equal(13, result2.OkdErrorsQueries);
-        Assert.Equal(8, result2.ReturnStatusCode);
+        Assert.Equal(13, result2.OkdErrorQueries);
+        Assert.Equal(8, result2.ReturnStatus);
         
-        var result3 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8502389");
+        var result3 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8502389");
         Assert.NotNull(result3);
         Assert.Equal(12, result3.Errors);
         Assert.Equal(13, result3.Queries);
-        Assert.Equal(14, result3.OkdErrorsQueries);
-        Assert.Equal(8, result3.ReturnStatusCode);
+        Assert.Equal(14, result3.OkdErrorQueries);
+        Assert.Equal(8, result3.ReturnStatus);
         
         // set back to original to ensure we are tracking changes, not unique rows
         
@@ -103,25 +104,25 @@ public class DataManagerTests
         finalCount = await _datamanager.GetLedgerCount();
         Assert.Equal(3, finalCount - updatedCount);
         
-        var result4 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8503023");
+        var result4 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8503023");
         Assert.NotNull(result4);
         Assert.Equal(1, result4.Errors);
         Assert.Equal(2, result4.Queries);
-        Assert.Equal(3, result4.OkdErrorsQueries);
-        Assert.Equal(7, result4.ReturnStatusCode);
+        Assert.Equal(3, result4.OkdErrorQueries);
+        Assert.Equal(7, result4.ReturnStatus);
         
-        var result5 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8153008");
+        var result5 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8153008");
         Assert.NotNull(result5);
         Assert.Equal(3, result5.Errors);
         Assert.Equal(4, result5.Queries);
-        Assert.Equal(5, result5.OkdErrorsQueries);
-        Assert.Equal(7, result5.ReturnStatusCode);
+        Assert.Equal(5, result5.OkdErrorQueries);
+        Assert.Equal(7, result5.ReturnStatus);
         
-        var result6 = await _datamanager.GetCensusSummary(SchoolcensusSpring, "8502389");
+        var result6 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8502389");
         Assert.NotNull(result6);
         Assert.Equal(4, result6.Errors);
         Assert.Equal(5, result6.Queries);
-        Assert.Equal(6, result6.OkdErrorsQueries);
-        Assert.Equal(7, result6.ReturnStatusCode);        
+        Assert.Equal(6, result6.OkdErrorQueries);
+        Assert.Equal(7, result6.ReturnStatus);        
     }
 }

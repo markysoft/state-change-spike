@@ -46,6 +46,32 @@ public class DataManager
         return result;
     }
 
+    public async Task<CensusStatus?> GetCensusStatus(int dcid, string laestab)
+    {
+        string sql = @"  
+        SELECT [SchoolName]
+              ,[LAEStab]
+              ,[ReturnStatus]
+              ,[Errors]
+              ,[Queries]
+              ,[OkdErrorQueries]
+              ,[Hash]
+              ,[UpdatedAt]
+              ,[DCID]
+          FROM [CollectStateLedger].[dbo].[CollectReturnStatus]
+        where LAEStab = @LAEStab and DCID = @DCID
+        order by UpdatedAt desc
+";
+        await using var connection = new SqlConnection(_connectionString);
+
+        var result = await connection.QueryFirstOrDefaultAsync<CensusStatus>(
+            sql,
+            new { DcId = dcid, Laestab = laestab }
+        );
+
+        return result;
+    }
+
     public async Task ClearDownLedger()
     {
         await using var connection = new SqlConnection(_connectionString);
@@ -98,9 +124,12 @@ FROM COLLECTPortal.dbo.DataReturn dr
 						 and dc.DCBladeSQLDatabase = @CensusName
 
 ";
-        
-        var values = new { CensusName = censusName, Laestab = laestab, HighErrors =  errors, LowErrors = queries, OKErrors = okdErrors, Status = status };
+
+        var values = new
+        {
+            CensusName = censusName, Laestab = laestab, HighErrors = errors, LowErrors = queries, OKErrors = okdErrors,
+            Status = status
+        };
         await connection.ExecuteAsync(updateSql, values);
-   
     }
 }
