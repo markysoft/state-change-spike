@@ -58,19 +58,6 @@ public class DataManager : IDataManager
         return result;
     }
 
-    public async Task<List<CensusSummary>> GetCensusSummary(string collection)
-    {
-        await using var connection = new SqlConnection(_connectionString);
-
-        var result = await connection.QueryAsync<CensusSummary>(
-            MIN_CORE_QUERY,
-            new { Collection = collection }
-        );
-
-        return result.ToList();
-    }
-
-
     public async Task<List<MinCensusState>> GetMinCollectStatus(string collection)
     {
         await using var connection = new SqlConnection(_connectionString);
@@ -83,7 +70,7 @@ public class DataManager : IDataManager
         return result.ToList();
     }
 
-    public async Task<CensusStatus?> GetCensusStatus(int dcid, string laestab)
+    public async Task<CensusStatus?> GetLedgerStatus(int dcid, string laestab)
     {
         string sql = @"  
         SELECT [SchoolName]
@@ -215,21 +202,22 @@ FROM COLLECTPortal.dbo.DataReturn dr
         await connection.ExecuteAsync(updateSql, values);
     }
 
-    public async Task AddNewStates(List<MinCensusState> states)
+    public async Task InsertCollectReturnStatuses(List<MinCensusState> states)
     {
+        // this could be quicker using https://dapper-plus.net/bulk-insert but is another library and more config
         await using var connection = new SqlConnection(_connectionString);
         var sql = @"INSERT INTO [CollectStateLedger].[dbo].[CollectReturnStatus] 
        (
-       SchoolName
-      ,LAEStab
-      ,ReturnStatusCode
-      ,Errors
-      ,Queries
-      ,OkdErrorsQueries
-      ,Hash
-      ,UpdatedAt
-      ,Collection
-      ,DCID
+       SchoolName,
+      LAEStab,
+      ReturnStatusCode,
+      Errors,
+      Queries,
+      OkdErrorsQueries,
+      Hash,
+      UpdatedAt,
+      Collection,
+      DCID
       ) 
     VALUES (
         @SchoolName,

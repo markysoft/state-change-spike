@@ -87,7 +87,7 @@ public class StateComparatorTests
         await _datamanager.ClearDownLedger();
         var firstPass = await stateComparator.BuildComparison();
         Assert.Equal(21873, firstPass.Count);
-        await _datamanager.AddNewStates(firstPass);
+        await _datamanager.InsertCollectReturnStatuses(firstPass);
 
         // simulate a change for three schools
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8503023", 10, 11, 12, 8);
@@ -96,9 +96,9 @@ public class StateComparatorTests
 
         var secondPass = await stateComparator.BuildComparison();
         Assert.Equal(3, secondPass.Count);
-        await _datamanager.AddNewStates(secondPass);
+        await _datamanager.InsertCollectReturnStatuses(secondPass);
 
-        var result1 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8503023");
+        var result1 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "8503023");
         Assert.NotNull(result1);
         Assert.Equal(10, result1.Errors);
         Assert.Equal(11, result1.Queries);
@@ -106,7 +106,7 @@ public class StateComparatorTests
         Assert.Equal(8, result1.ReturnStatusCode);
         Assert.Equal(7, result1.PreviousReturnStatusCode);
 
-        var result2 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8153008");
+        var result2 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "8153008");
         Assert.NotNull(result2);
         Assert.Equal(11, result2.Errors);
         Assert.Equal(12, result2.Queries);
@@ -114,7 +114,7 @@ public class StateComparatorTests
         Assert.Equal(8, result2.ReturnStatusCode);
         Assert.Equal(7, result2.PreviousReturnStatusCode);
 
-        var result3 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8502389");
+        var result3 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "8502389");
         Assert.NotNull(result3);
         Assert.Equal(12, result3.Errors);
         Assert.Equal(13, result3.Queries);
@@ -130,9 +130,9 @@ public class StateComparatorTests
         
         var thirdPass = await stateComparator.BuildComparison();
         Assert.Equal(3, thirdPass.Count);
-        await _datamanager.AddNewStates(thirdPass);
+        await _datamanager.InsertCollectReturnStatuses(thirdPass);
 
-        var result4 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8503023");
+        var result4 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "8503023");
         Assert.NotNull(result4);
         Assert.Equal(1, result4.Errors);
         Assert.Equal(2, result4.Queries);
@@ -140,7 +140,7 @@ public class StateComparatorTests
         Assert.Equal(7, result4.ReturnStatusCode);
         Assert.Equal(8, result4.PreviousReturnStatusCode);
 
-        var result5 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8153008");
+        var result5 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "8153008");
         Assert.NotNull(result5);
         Assert.Equal(3, result5.Errors);
         Assert.Equal(4, result5.Queries);
@@ -148,7 +148,7 @@ public class StateComparatorTests
         Assert.Equal(7, result5.ReturnStatusCode);
         Assert.Equal(8, result5.PreviousReturnStatusCode);
 
-        var result6 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8502389");
+        var result6 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "8502389");
         Assert.NotNull(result6);
         Assert.Equal(4, result6.Errors);
         Assert.Equal(5, result6.Queries);
