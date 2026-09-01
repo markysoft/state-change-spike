@@ -76,6 +76,7 @@ public class DataManagerTests
         Assert.Equal(11, result1.Queries);
         Assert.Equal(12, result1.OkdErrorQueries);
         Assert.Equal(8, result1.ReturnStatus);
+        Assert.Equal(7, result1.PreviousReturnStatus);
         
         var result2 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8153008");
         Assert.NotNull(result2);
@@ -83,6 +84,7 @@ public class DataManagerTests
         Assert.Equal(12, result2.Queries);
         Assert.Equal(13, result2.OkdErrorQueries);
         Assert.Equal(8, result2.ReturnStatus);
+        Assert.Equal(7, result2.PreviousReturnStatus);
         
         var result3 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8502389");
         Assert.NotNull(result3);
@@ -90,6 +92,7 @@ public class DataManagerTests
         Assert.Equal(13, result3.Queries);
         Assert.Equal(14, result3.OkdErrorQueries);
         Assert.Equal(8, result3.ReturnStatus);
+        Assert.Equal(7, result3.PreviousReturnStatus);
         
         // set back to original to ensure we are tracking changes, not unique rows
         
@@ -110,6 +113,7 @@ public class DataManagerTests
         Assert.Equal(2, result4.Queries);
         Assert.Equal(3, result4.OkdErrorQueries);
         Assert.Equal(7, result4.ReturnStatus);
+        Assert.Equal(8, result4.PreviousReturnStatus);
         
         var result5 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8153008");
         Assert.NotNull(result5);
@@ -117,12 +121,14 @@ public class DataManagerTests
         Assert.Equal(4, result5.Queries);
         Assert.Equal(5, result5.OkdErrorQueries);
         Assert.Equal(7, result5.ReturnStatus);
+        Assert.Equal(8, result5.PreviousReturnStatus);
         
         var result6 = await _datamanager.GetCensusStatus(SchoolCensusSpringDcId, "8502389");
         Assert.NotNull(result6);
         Assert.Equal(4, result6.Errors);
         Assert.Equal(5, result6.Queries);
         Assert.Equal(6, result6.OkdErrorQueries);
-        Assert.Equal(7, result6.ReturnStatus);        
+        Assert.Equal(7, result6.ReturnStatus);     
+        Assert.Equal(8, result6.PreviousReturnStatus);   
     }
 }

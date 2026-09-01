@@ -9,6 +9,8 @@ public class CensusStatus
     
     public int ReturnStatus { get; set; }
     
+    public int? PreviousReturnStatus { get; set; }
+    
     public int Errors { get; set; }
 
     public int Queries { get; set; }

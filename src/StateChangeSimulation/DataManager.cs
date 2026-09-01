@@ -52,6 +52,7 @@ public class DataManager
         SELECT [SchoolName]
               ,[LAEStab]
               ,[ReturnStatus]
+              ,LAG([ReturnStatus]) OVER (ORDER BY [UpdatedAt] ASC) AS [PreviousReturnStatus]
               ,[Errors]
               ,[Queries]
               ,[OkdErrorQueries]
