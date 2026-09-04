@@ -19,7 +19,7 @@ public interface IDataManager
 public class DataManager : IDataManager
 {
     private readonly string _connectionString =
-        "Server=localhost;Database=COLLECTPortal;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
+        "Server=localhost;Database=CollectStateLedger;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
 
     private const string MIN_CORE_QUERY = @"  
             SELECT       
@@ -202,7 +202,7 @@ FROM COLLECTPortal.dbo.DataReturn dr
         await connection.ExecuteAsync(updateSql, values);
     }
 
-    public async Task InsertCollectReturnStatuses(List<MinCensusState> states)
+    public async Task<int> InsertCollectReturnStatuses(List<MinCensusState> states)
     {
         // this could be quicker using https://dapper-plus.net/bulk-insert but is another library and more config
         await using var connection = new SqlConnection(_connectionString);
@@ -232,6 +232,6 @@ FROM COLLECTPortal.dbo.DataReturn dr
         @DCID
     )
 ";
-        var rowsAffected = connection.Execute(sql, states);
+        return await connection.ExecuteAsync(sql, states);
     }
 }
