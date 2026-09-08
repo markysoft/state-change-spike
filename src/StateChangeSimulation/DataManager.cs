@@ -160,7 +160,7 @@ SELECT [SchoolName]
     {
         await using var connection = new SqlConnection(_connectionString);
         var storedProcedureName = "[CollectStateLedger].[dbo].[AddChangedCollectReturnStatus]";
-        var values = new { CensusName = censusName, DaysSubtract = daysSubtract };
+        var values = new { @DCBladeSQLDatabase = censusName};
         var result =
             await connection.ExecuteAsync(storedProcedureName, values, commandType: CommandType.StoredProcedure);
         return result;
@@ -172,26 +172,24 @@ SELECT [SchoolName]
         await using var connection = new SqlConnection(_connectionString);
         string updateSql = @"
 UPDATE dr
-SET DRStatus = @Status, 
+SET 
+  DRStatus = @Status, 
   HighErrors = @HighErrors,
   LowErrors = @LowErrors,
   OKErrors = @OKErrors
 FROM COLLECTPortal.dbo.DataReturn dr
-            INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
-                        ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
-            INNER JOIN COLLECTPortal.dbo.Organisation o
-                        ON orol.OrganisationID = o.OrganisationID
-            INNER JOIN CollectPortal.dbo.OrganisationRole orol2
-                        ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
-            INNER JOIN COLLECTPortal.dbo.Organisation o2
-                        ON orol2.OrganisationID = o2.OrganisationID
-			INNER JOIN COLLECTPortal.dbo.DataCollection dc
-			ON dc.DCID = dr.DCID
-
-  WHERE
-                         o.OrganisationNativeID = @Laestab
-						 and dc.DCBladeSQLDatabase = @CensusName
-
+INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
+    ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
+INNER JOIN COLLECTPortal.dbo.Organisation o
+    ON orol.OrganisationID = o.OrganisationID
+INNER JOIN CollectPortal.dbo.OrganisationRole orol2
+    ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
+INNER JOIN COLLECTPortal.dbo.Organisation o2
+    ON orol2.OrganisationID = o2.OrganisationID
+INNER JOIN COLLECTPortal.dbo.DataCollection dc
+    ON dc.DCID = dr.DCID
+WHERE o.OrganisationNativeID = @Laestab
+AND dc.DCBladeSQLDatabase = @CensusName
 ";
 
         var values = new
