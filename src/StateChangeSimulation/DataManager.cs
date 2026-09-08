@@ -12,7 +12,7 @@ public interface IDataManager
     Task<int> GetLedgerCount();
     Task<int> UpdateCensusLedger(string censusName, int daysSubtract);
 
-    Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+    Task SimulateDataUpdate(string censusName, string laestab, int? errors, int? queries, int? okdErrors,
         int status);
 }
 
@@ -166,7 +166,7 @@ SELECT [SchoolName]
         return result;
     }
 
-    public async Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+    public async Task SimulateDataUpdate(string censusName, string laestab, int? errors, int? queries, int? okdErrors,
         int status)
     {
         await using var connection = new SqlConnection(_connectionString);

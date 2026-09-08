@@ -31,7 +31,7 @@ public class MockDataManager: IDataManager
         throw new NotImplementedException();
     }
 
-    public Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors, int status)
+    public Task SimulateDataUpdate(string censusName, string laestab, int? errors, int? queries, int? okdErrors, int status)
     {
         throw new NotImplementedException();
     }
