@@ -92,7 +92,7 @@ public class DataManagerTests
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8503023", 1, 2, 3, 7);
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8153008", 3, 4, 5, 7);
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8502389", 4, 5, 6, 7);
-        await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "9313205", null,null, null, 7);
+        await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "9313205", null,4, null, 7);
         
         await _datamanager.ClearDownLedger();
         await _datamanager.UpdateCensusLedger(SchoolCensusSpring, 7);
@@ -147,7 +147,7 @@ public class DataManagerTests
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8503023", 1, 2, 3, 7);
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8153008", 3, 4, 5, 7);
         await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "8502389", 4, 5, 6, 7);
-        await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "9313205", null, null, null, 7);
+        await _datamanager.SimulateDataUpdate(SchoolCensusSpring, "9313205", null, 4, null, 7);
 
         await _datamanager.UpdateCensusLedger(SchoolCensusSpring, 5);
         var finalCount = await _datamanager.GetLedgerCount();
@@ -183,7 +183,7 @@ public class DataManagerTests
         var result8 = await _datamanager.GetLedgerStatus(SchoolCensusSpringDcId, "9313205");
         Assert.NotNull(result8);
         Assert.Null(result8.Errors);
-        Assert.Null(result8.Queries);
+        Assert.Equal(4, result8.Queries);
         Assert.Null(result8.OkdErrorsQueries);
         Assert.Equal(7, result8.ReturnStatusCode);
         Assert.Equal(8, result8.PreviousReturnStatusCode);
