@@ -12,14 +12,14 @@ public interface IDataManager
     Task<int> GetLedgerCount();
     Task<int> UpdateCensusLedger(string censusName, int daysSubtract);
 
-    Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+    Task SimulateDataUpdate(string censusName, string laestab, int? errors, int? queries, int? okdErrors,
         int status);
 }
 
 public class DataManager : IDataManager
 {
     private readonly string _connectionString =
-        "Server=localhost;Database=COLLECTPortal;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
+        "Server=localhost;Database=CollectStateLedger;User Id=SA;Password=MyStrongPassword123!;TrustServerCertificate=True;Encrypt=True;";
 
     private const string MIN_CORE_QUERY = @"  
             SELECT       
@@ -160,38 +160,36 @@ SELECT [SchoolName]
     {
         await using var connection = new SqlConnection(_connectionString);
         var storedProcedureName = "[CollectStateLedger].[dbo].[AddChangedCollectReturnStatus]";
-        var values = new { CensusName = censusName, DaysSubtract = daysSubtract };
+        var values = new { @DCBladeSQLDatabase = censusName};
         var result =
             await connection.ExecuteAsync(storedProcedureName, values, commandType: CommandType.StoredProcedure);
         return result;
     }
 
-    public async Task SimulateDataUpdate(string censusName, string laestab, int errors, int queries, int okdErrors,
+    public async Task SimulateDataUpdate(string censusName, string laestab, int? errors, int? queries, int? okdErrors,
         int status)
     {
         await using var connection = new SqlConnection(_connectionString);
         string updateSql = @"
 UPDATE dr
-SET DRStatus = @Status, 
+SET 
+  DRStatus = @Status, 
   HighErrors = @HighErrors,
   LowErrors = @LowErrors,
   OKErrors = @OKErrors
 FROM COLLECTPortal.dbo.DataReturn dr
-            INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
-                        ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
-            INNER JOIN COLLECTPortal.dbo.Organisation o
-                        ON orol.OrganisationID = o.OrganisationID
-            INNER JOIN CollectPortal.dbo.OrganisationRole orol2
-                        ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
-            INNER JOIN COLLECTPortal.dbo.Organisation o2
-                        ON orol2.OrganisationID = o2.OrganisationID
-			INNER JOIN COLLECTPortal.dbo.DataCollection dc
-			ON dc.DCID = dr.DCID
-
-  WHERE
-                         o.OrganisationNativeID = @Laestab
-						 and dc.DCBladeSQLDatabase = @CensusName
-
+INNER JOIN COLLECTPortal.dbo.OrganisationRole orol
+    ON dr.SourceOrganisationRoleID = orol.OrganisationRoleID
+INNER JOIN COLLECTPortal.dbo.Organisation o
+    ON orol.OrganisationID = o.OrganisationID
+INNER JOIN CollectPortal.dbo.OrganisationRole orol2
+    ON dr.AgentOrganisationRoleID = orol2.OrganisationRoleID
+INNER JOIN COLLECTPortal.dbo.Organisation o2
+    ON orol2.OrganisationID = o2.OrganisationID
+INNER JOIN COLLECTPortal.dbo.DataCollection dc
+    ON dc.DCID = dr.DCID
+WHERE o.OrganisationNativeID = @Laestab
+AND dc.DCBladeSQLDatabase = @CensusName
 ";
 
         var values = new
@@ -202,7 +200,7 @@ FROM COLLECTPortal.dbo.DataReturn dr
         await connection.ExecuteAsync(updateSql, values);
     }
 
-    public async Task InsertCollectReturnStatuses(List<MinCensusState> states)
+    public async Task<int> InsertCollectReturnStatuses(List<MinCensusState> states)
     {
         // this could be quicker using https://dapper-plus.net/bulk-insert but is another library and more config
         await using var connection = new SqlConnection(_connectionString);
@@ -232,6 +230,6 @@ FROM COLLECTPortal.dbo.DataReturn dr
         @DCID
     )
 ";
-        var rowsAffected = connection.Execute(sql, states);
+        return await connection.ExecuteAsync(sql, states);
     }
 }

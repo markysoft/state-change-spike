@@ -1,5 +1,4 @@
 ﻿using StateChangeSimulation;
-using StatusChangeSimulation.Test.obj;
 
 namespace StatusChangeSimulation.Test;
 

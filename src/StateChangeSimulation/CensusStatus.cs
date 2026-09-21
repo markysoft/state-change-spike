@@ -11,11 +11,11 @@ public class CensusStatus
     
     public int? PreviousReturnStatusCode { get; set; }
     
-    public int Errors { get; set; }
+    public int? Errors { get; set; }
 
-    public int Queries { get; set; }
+    public int? Queries { get; set; }
 
-    public int OkdErrorsQueries { get; set; }
+    public int? OkdErrorsQueries { get; set; }
 
     public string Hash { get; set; } = string.Empty;
     
